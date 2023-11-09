@@ -1,6 +1,98 @@
+import tkinter as tk
+from tkinter import messagebox
 import random
 
-# Funktion zum Erstellen eines Kartendecks
+class BlackjackGUI:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Blackjack")
+        
+        self.money = 3000
+        self.bet = 100
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.money_label = tk.Label(self.master, text="Geld: $3000")
+        self.money_label.pack()
+
+        self.bet_label = tk.Label(self.master, text="Einsatz: $100")
+        self.bet_label.pack()
+
+        self.player_hand_label = tk.Label(self.master, text="Spielerhand: ")
+        self.player_hand_label.pack()
+
+        self.dealer_hand_label = tk.Label(self.master, text="Dealerhand: ")
+        self.dealer_hand_label.pack()
+
+        self.hit_button = tk.Button(self.master, text="Karte ziehen", command=self.hit)
+        self.hit_button.pack()
+
+        self.stand_button = tk.Button(self.master, text="Stehen", command=self.stand)
+        self.stand_button.pack()
+
+    def update_labels(self):
+        self.money_label.config(text="Geld: ${}".format(self.money))
+        self.bet_label.config(text="Einsatz: ${}".format(self.bet))
+        self.player_hand_label.config(text="Spielerhand: {}".format(self.player_hand))
+        self.dealer_hand_label.config(text="Dealerhand: {}".format(self.dealer_hand))
+
+    def deal_initial_cards(self):
+        self.deck = create_deck()
+        self.player_hand = [self.deck.pop(), self.deck.pop()]
+        self.dealer_hand = [self.deck.pop(), self.deck.pop()]
+        self.update_labels()
+
+    def hit(self):
+        self.player_hand.append(self.deck.pop())
+        self.update_labels()
+
+        player_score = calculate_score(self.player_hand)
+
+        if player_score == 21 and len(self.player_hand) == 2:
+            messagebox.showinfo("Blackjack", "Blackjack! Du gewinnst!")
+            self.money += self.bet * 1.5
+            self.play_again()
+        elif player_score > 21:
+            messagebox.showinfo("Überkauf", "Du hast überkauft. Du verlierst.")
+            self.money -= self.bet
+            self.play_again()
+
+    def stand(self):
+        while calculate_score(self.dealer_hand) < 17:
+            self.dealer_hand.append(self.deck.pop())
+
+        dealer_score = calculate_score(self.dealer_hand)
+        player_score = calculate_score(self.player_hand)
+
+        if dealer_score > 21:
+            messagebox.showinfo("Gewinn", "Dealer hat überkauft. Du gewinnst!")
+            self.money += self.bet
+        elif player_score > dealer_score:
+            messagebox.showinfo("Gewinn", "Du gewinnst!")
+            self.money += self.bet
+        elif player_score == dealer_score:
+            messagebox.showinfo("Unentschieden", "Unentschieden")
+        else:
+            messagebox.showinfo("Verlust", "Du verlierst.")
+            self.money -= self.bet
+
+        self.play_again()
+
+    def play_again(self):
+        self.bet = 100
+        self.update_labels()
+
+        if self.money <= 0:
+            messagebox.showinfo("Spiel vorbei", "Du hast kein Geld mehr. Spiel vorbei.")
+            self.master.destroy()
+        else:
+            result = messagebox.askyesno("Nochmal spielen?", "Wollen Sie nochmal spielen?")
+            if result:
+                self.deal_initial_cards()
+            else:
+                self.master.destroy()
+
 def create_deck():
     ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
     suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
@@ -8,7 +100,6 @@ def create_deck():
     random.shuffle(deck)
     return deck
 
-# Funktion zum Berechnen der Punktzahl einer Hand
 def calculate_score(hand):
     score = 0
     num_aces = 0
@@ -25,63 +116,8 @@ def calculate_score(hand):
         num_aces -= 1
     return score
 
-# Hauptspiel
-def play_blackjack():
-    money = 3000
-    bet = 100
-    again = True
-
-    while again:
-        deck = create_deck()
-        player_hand = [deck.pop(), deck.pop()]
-        dealer_hand = [deck.pop(), deck.pop()]
-
-        while True:
-            player_score = calculate_score(player_hand)
-            dealer_score = calculate_score(dealer_hand)
-
-            print(f"Deine Hand: {player_hand}, Punktzahl: {player_score}")
-            print(f"Hand des Dealers: [{dealer_hand[0]}, ?]")
-
-            if player_score == 21 and len(player_hand) == 2:
-                print("Blackjack! Du gewinnst!")
-                money += bet*1,5
-                break
-            elif dealer_score == 21 and len(dealer_hand) == 2:
-                print("Dealer hat Blackjack. Du verlierst.")
-                money -= bet
-                break
-            elif player_score > 21:
-                print("Du hast überkauft. Du verlierst.")
-                money -= bet
-                break
-            elif dealer_score > 21:
-                print("Dealer hat überkauft. Du gewinnst!")
-                money += bet
-                break
-
-            action = input("Möchtest du eine weitere Karte ziehen? Ja oder Nein: ").lower()
-            if action == 'ja':
-                player_hand.append(deck.pop())
-            else:
-                while dealer_score < 17:
-                    dealer_hand.append(deck.pop())
-                    dealer_score = calculate_score(dealer_hand)
-
-                print(f"Hand des Dealers: {dealer_hand}, Punktzahl: {dealer_score}")
-                if dealer_score > 21:
-                    print("Dealer hat überkauft. Du gewinnst!")
-                    money += bet
-                elif player_score > dealer_score:
-                    print("Du gewinnst!")
-                    money += bet
-                else:
-                    print("Du verlierst.")
-                    money -= bet
-                break
-
-        again = input("Wollen Sie nochmal spielen? (True/False) ").lower() == 'true'
-    
-    print("Your final Money is: %s" % money)
-
-play_blackjack()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = BlackjackGUI(root)
+    app.deal_initial_cards()
+    root.mainloop()
