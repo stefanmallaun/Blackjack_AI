@@ -106,18 +106,23 @@ def create_deck():
 def calculate_score(hand):
     score = 0
     num_aces = 0
+
     for card in hand:
         if card['rank'] in ['K', 'Q', 'J']:
             score += 10
         elif card['rank'] == 'A':
-            score += 11
             num_aces += 1
         else:
             score += int(card['rank'])
-    while score > 21 and num_aces > 0:
-        score -= 10
-        num_aces -= 1
+
+    for _ in range(num_aces):
+        if score + 11 <= 21:
+            score += 11
+        else:
+            score += 1
+
     return score
+
 
 
 def fitness(score, bet, remaining_cards):
@@ -128,11 +133,11 @@ def fitness(score, bet, remaining_cards):
     num_possible_scenarios = 0
 
     for remaining_card in remaining_cards:
-        player_score = score + remaining_card['rank']
+        player_score = score + int(remaining_card['rank'])  # Convert the rank to an integer
         if player_score <= 21:
             # If the player doesn't bust, the dealer has a 50% chance of winning or losing.
             # Therefore, we calculate the expected value based on the score difference between the player and the dealer.
-            dealer_score = score + remaining_card['rank'] + 10 # The dealer always has a 10 score buffer
+            dealer_score = score + int(remaining_card['rank']) + 10  # Convert the rank to an integer
             expected_value += (player_score - dealer_score) / 2
             num_possible_scenarios += 1
 

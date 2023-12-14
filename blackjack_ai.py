@@ -5,6 +5,8 @@ import Blackjack_V1
 import numpy as np
 from deap import base, creator, tools, algorithms
 
+from blackjack_genetic import genetic_algorithm
+
 class BlackjackAI:
     
     def __init__(self, strategy):
@@ -83,20 +85,14 @@ class BlackjackAI_GUI(Blackjack_V1.BlackjackGUI):
         super().deal_initial_cards()
         # Füge hier die Initialisierung für die KI hinzu, falls erforderlich
 
-def play_multiple_games(num_games):
-    for _ in range(num_games):
-        root = tk.Tk()
-        app = BlackjackAI_GUI(root, BlackjackAI())
-        app.deal_initial_cards()
-        root.mainloop()
-
-if __name__ == "__main__":
-    optimal_strategy = genetic_algorithm(population_size=10, generations=5, mutation_rate=0.1)
-
-    # Play multiple games using the optimal strategy
-    num_games = 5
+def play_multiple_games(num_games, optimal_strategy):
     for _ in range(num_games):
         root = tk.Tk()
         app = BlackjackAI_GUI(root, optimal_strategy)
         app.deal_initial_cards()
         root.mainloop()
+
+if __name__ == "__main__":
+    num_games = 5
+    optimal_strategy = genetic_algorithm(population_size=10, generations=5, mutation_rate=0.1)
+    play_multiple_games(num_games, optimal_strategy)
